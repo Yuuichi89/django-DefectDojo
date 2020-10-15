@@ -797,7 +797,7 @@ def delete_product(request, pid):
                    })
 
 
-@user_must_be_authorized(Product, 'staff', 'pid') # use arg 0 as using pid causes issues, I think due to cicd being there
+@user_must_be_authorized(Product, 'staff', 'pid')  # use arg 0 as using pid causes issues, I think due to cicd being there
 def new_eng_for_app(request, pid, cicd=False):
     jform = None
     prod = Product.objects.get(id=pid)
@@ -812,7 +812,7 @@ def new_eng_for_app(request, pid, cicd=False):
         #     print(f'Key: {key}')
         #     print(f'Value: {value}')
 
-        form = EngForm(request.POST, cicd=cicd, product=prod.id, user = request.user)
+        form = EngForm(request.POST, cicd=cicd, product=prod.id, user=request.user)
         if form.is_valid():
             new_eng = form.save(commit=False)
             if not new_eng.name:
@@ -893,6 +893,7 @@ def new_tech_for_prod(request, pid):
                 {'form': form, 'pid': pid})
 
 
+# @user_passes_test(lambda u: u.is_staff)
 @user_must_be_authorized(Product, 'staff', 'pid')
 def new_eng_for_app_cicd(request, pid):
     # we have to use pid=pid here as new_eng_for_app expects kwargs, because that is how django calls the function based on urls.py named groups

@@ -722,7 +722,7 @@ class EngForm(forms.ModelForm):
         self.user = None
         if 'user' in kwargs:
             self.user = kwargs.pop('user')
-        
+
         tags = Tag.objects.usage_for_model(Engagement)
         t = [(tag.name, tag.name) for tag in tags]
         super(EngForm, self).__init__(*args, **kwargs)
@@ -736,7 +736,7 @@ class EngForm(forms.ModelForm):
             self.fields['lead'].queryset = User.objects.exclude(is_staff=False)
 
         if self.user is not None and not self.user.is_staff and not self.user.is_superuser:
-            self.fields['product'].queryset = Product.objects.all().filter(authorized_users_in=[self.user])
+            self.fields['product'].queryset = Product.objects.all().filter(authorized_users__in=[self.user])
 
         # Don't show CICD fields on a interactive engagement
         if cicd is False:
@@ -978,7 +978,7 @@ class FindingForm(forms.ModelForm):
     date = forms.DateField(required=True,
                            widget=forms.TextInput(attrs={'class': 'datepicker', 'autocomplete': 'off'}))
     cwe = forms.IntegerField(required=False)
-    cve = forms.CharField(max_length=28, required=False)
+    cve = forms.CharField(max_length=28, required=False, strip=False)
     cvssv3 = forms.CharField(max_length=117, required=False, widget=forms.TextInput(attrs={'class': 'cvsscalculator', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'}))
     description = forms.CharField(widget=forms.Textarea)
     severity = forms.ChoiceField(
@@ -1035,6 +1035,8 @@ class FindingForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(FindingForm, self).clean()
+
+        cleaned_data['cve'] = None if cleaned_data['cve'] == '' else cleaned_data['cve']
         if (cleaned_data['active'] or cleaned_data['verified']) and cleaned_data['duplicate']:
             raise forms.ValidationError('Duplicate findings cannot be'
                                         ' verified or active')
